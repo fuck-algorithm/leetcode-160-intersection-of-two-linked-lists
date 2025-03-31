@@ -12,43 +12,98 @@ export const renderInfoPanel = (
   viewBoxHeight: number,
   scale: number = 1
 ) => {
+  // 移除先前的信息面板（如果有）
+  svg.selectAll('.info-panel').remove();
+  
+  // 将面板位置调整更靠上
   const infoPanel = svg.append('g')
     .attr('class', 'info-panel')
-    .attr('transform', `translate(${viewBoxWidth * 0.5}, ${viewBoxHeight * 0.08})`);
+    .attr('transform', `translate(${viewBoxWidth * 0.5}, ${viewBoxHeight * 0.05})`);
+  
+  // 计算面板宽度 - 对于中文宽度需要增加一些额外空间
+  const panelWidth = Math.min(viewBoxWidth * 0.8, 800); // 限制最大宽度但确保足够空间
+  const initialHeight = 40; // 减小默认高度
   
   // 添加背景
-  infoPanel.append('rect')
-    .attr('x', -250)
-    .attr('y', -30)
-    .attr('width', 500)
-    .attr('height', 60)
-    .attr('rx', 10)
-    .attr('ry', 10)
+  const background = infoPanel.append('rect')
+    .attr('x', -panelWidth / 2)
+    .attr('y', -initialHeight / 2)
+    .attr('width', panelWidth)
+    .attr('height', initialHeight)
+    .attr('rx', 8)
+    .attr('ry', 8)
     .attr('fill', 'rgba(44, 62, 80, 0.1)')
     .attr('stroke', 'rgba(44, 62, 80, 0.2)')
     .attr('stroke-width', 1);
   
-  // 添加步骤计数
-  infoPanel.append('text')
-    .attr('x', -230)
+  // 减小步骤指示文本大小，并调整位置
+  const stepText = infoPanel.append('text')
+    .attr('x', -panelWidth / 2 + 15)
     .attr('y', 0)
     .attr('text-anchor', 'start')
     .attr('dominant-baseline', 'middle')
-    .attr('font-size', 14 * scale)
+    .attr('font-size', 11 * scale) // 进一步减小字体
     .attr('font-weight', 'bold')
     .attr('fill', 'var(--primary-color)')
     .text(`步骤: ${step}`);
   
-  // 添加消息文本
-  infoPanel.append('text')
-    .attr('x', -160)
+  // 获取步骤文字的实际宽度
+  const stepTextWidth = stepText.node()?.getComputedTextLength() || 70;
+  
+  // 添加消息文本 - 减小字体尺寸
+  const messageText = infoPanel.append('text')
+    .attr('class', 'message-text')
+    .attr('x', -panelWidth / 2 + stepTextWidth + 20) // 动态调整起始位置，基于步骤文本的宽度
     .attr('y', 0)
     .attr('text-anchor', 'start')
     .attr('dominant-baseline', 'middle')
-    .attr('font-size', 14 * scale)
+    .attr('font-size', 11 * scale) // 进一步减小字体
     .attr('fill', 'var(--dark-color)')
-    .text(message)
-    .call(wrapText, 350, 18 * scale);
+    .text("");
+  
+  // 自定义中文文本换行 - 适应中文显示
+  const maxLineWidth = panelWidth - stepTextWidth - 40; // 可用于消息文本的最大宽度
+  
+  // 将消息分成单个字符进行测量和排列
+  const chars = message.split('');
+  let currentLine = "";
+  let lineY = 0;
+  let lineHeight = 14 * scale;
+  let maxLines = 1;
+  
+  // 添加第一行起始点
+  let tspan = messageText.append('tspan')
+    .attr('x', -panelWidth / 2 + stepTextWidth + 20)
+    .attr('dy', 0);
+  
+  // 逐字符添加并检查行宽
+  for (let i = 0; i < chars.length; i++) {
+    currentLine += chars[i];
+    tspan.text(currentLine);
+    
+    // 如果当前行太长，创建新行
+    if (tspan.node()?.getComputedTextLength() as number > maxLineWidth && i > 0) {
+      // 回退一个字符
+      currentLine = currentLine.slice(0, -1);
+      tspan.text(currentLine);
+      
+      // 创建新行开始下一个字符
+      currentLine = chars[i];
+      lineY += lineHeight;
+      maxLines++;
+      
+      tspan = messageText.append('tspan')
+        .attr('x', -panelWidth / 2 + stepTextWidth + 20)
+        .attr('dy', lineHeight)
+        .text(currentLine);
+    }
+  }
+  
+  // 根据实际行数调整背景高度
+  if (maxLines > 1) {
+    const newHeight = Math.max(initialHeight, lineHeight * (maxLines + 0.5));
+    background.attr('height', newHeight).attr('y', -newHeight / 2);
+  }
 };
 
 /**

@@ -410,7 +410,17 @@ export function useAlgorithmSteps() {
     
     const runStep = () => {
       if (state.isRunning && !state.completed) {
-        stepForward();
+        const completed = stepForward();
+        
+        // 如果执行完成，立即停止连续执行
+        if (completed) {
+          setState(prev => ({
+            ...prev,
+            isRunning: false
+          }));
+          return;
+        }
+        
         timeoutId = window.setTimeout(runStep, state.speed);
       }
     };
@@ -425,6 +435,16 @@ export function useAlgorithmSteps() {
       }
     };
   }, [state.isRunning, state.completed, state.speed, stepForward]);
+  
+  // 监听算法完成状态，确保在算法完成时停止连续执行
+  useEffect(() => {
+    if (state.completed && state.isRunning) {
+      setState(prev => ({
+        ...prev,
+        isRunning: false
+      }));
+    }
+  }, [state.completed]);
 
   // 返回状态和操作函数
   return {
