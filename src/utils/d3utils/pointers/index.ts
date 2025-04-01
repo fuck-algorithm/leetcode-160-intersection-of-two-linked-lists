@@ -1,12 +1,6 @@
-// 导出指针相关功能
-export { addPointerMarker } from './pointerMarker';
-export { addPointerHighlight } from './pointerHighlight';
-export { 
-  addPointerAHighlight, 
-  addPointerBHighlight, 
-  addIntersectionHighlight 
-} from './specificPointers';
-export { 
-  addPointerMoveEffect, 
-  addPointersIntersectEffect 
-} from './pointerEffects'; 
+// 导出所有指针相关函数
+export * from './pointerMarker';
+export * from './pointerHighlight';
+export * from './specificPointers';
+export * from './pointerEffects';
+export * from './nodeAnimations'; // 导出新增的节点动画 
