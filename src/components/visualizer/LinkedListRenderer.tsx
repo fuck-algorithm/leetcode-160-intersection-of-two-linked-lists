@@ -25,7 +25,8 @@ export const drawLinkedList = (
   currentNode: ListNode | null,
   pointerColor: string,
   pointerLabel: string | null,
-  scale: number = 1
+  scale: number = 1,
+  fontSize: number = 24
 ) => {
   nodes.forEach((node, index) => {
     const x = startX + index * spacing;
@@ -49,7 +50,7 @@ export const drawLinkedList = (
         .attr('text-anchor', 'middle')
         .attr('dy', '0.3em')
         .attr('fill', 'white')
-        .attr('font-size', `${14 * scale}px`)
+        .attr('font-size', `${fontSize}px`)
         .attr('font-weight', 'bold')
         .text(node.val);
     }
@@ -62,9 +63,9 @@ export const drawLinkedList = (
       
       // 根据指针类型添加统一的高亮效果，并传入节点值
       if (pointerLabel === 'pA') {
-        addPointerAHighlight(svg, x, y, nodeRadius, scale, node.val);
+        addPointerAHighlight(svg, x, y, nodeRadius, scale, node.val, fontSize);
       } else if (pointerLabel === 'pB') {
-        addPointerBHighlight(svg, x, y, nodeRadius, scale, node.val);
+        addPointerBHighlight(svg, x, y, nodeRadius, scale, node.val, fontSize);
       } 
       // 对于pA=pB的情况，在调用方处理
     }
