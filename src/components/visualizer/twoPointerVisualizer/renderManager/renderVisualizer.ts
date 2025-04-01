@@ -7,6 +7,14 @@ import { renderEmptyState } from './renderEmptyState';
 import { renderLinkedLists } from './renderLinkedLists';
 import { renderIntersection } from './renderIntersection';
 import { addPointersIntersectEffect } from '../../../../utils/d3utils/pointers';
+import { 
+  addPointerAHighlight, 
+  addPointerBHighlight, 
+  addIntersectionHighlight, 
+  addNodeSelectedEffect,
+  addPointersIntersectionEffect
+} from '../../../../utils/d3utils/pointers';
+import { collectNodePositions, applyAnimationEffects } from './renderAnimations';
 
 /**
  * 渲染可视化器
@@ -152,6 +160,15 @@ export const renderVisualizer = (
   
   // @ts-ignore - 绕过TS类型检查，确保调用正确的重载版本
   renderLinkedLists(renderParams);
+  
+  // 在渲染链表之后、添加各种特效之前，收集节点位置
+  const nodePositions = collectNodePositions(
+    nodeInfo,
+    leftOffset,
+    nodeSpacing,
+    topRowY,
+    bottomRowY
+  );
   
   // 渲染相交部分的连接线 - 使用与参考图类似的方式连接
   if (nodeInfo.hasIntersection && nodeInfo.intersectionNodes.length > 0) {
@@ -666,113 +683,18 @@ export const renderVisualizer = (
           .attr('d', `M${-arrowSize},${lineEndY - arrowSize} L0,${lineEndY} L${arrowSize},${lineEndY - arrowSize} Z`)
           .attr('fill', '#9b59b6');
           
-        // 标记指针B已经被渲染
+        // 标记指针B已被渲染
         renderedPointers.pointerB.add(currentNodeB);
       }
     }
     
-    // 添加指针相交效果
-    if (currentNodeA && currentNodeB && currentNodeA === currentNodeB && nodeAX > 0 && nodeAY > 0) {
-      // 检查两个指针是否都还没有被渲染
-      const needToRenderA = !renderedPointers.pointerA.has(currentNodeA);
-      const needToRenderB = !renderedPointers.pointerB.has(currentNodeB);
-      
-      // 如果两个指针中至少有一个还没有被渲染，就创建节点组
-      if (needToRenderA || needToRenderB) {
-        // 为节点创建一个固定位置的组
-        const nodeGroup = svg.append('g')
-          .attr('transform', `translate(${nodeAX}, ${nodeAY})`);
-        
-        // 计算指针标签的位置和大小
-        const pointerRadius = nodeRadius * 0.6;  // 指针圆圈的半径
-        const pointerDistance = nodeRadius * 2.5;   // 指针距离节点中心的距离
-        
-        // 只有在指针A还没有被渲染时才添加指针A
-        if (needToRenderA) {
-          // 1. 添加指针A的圆圈和标签 - 放在上方
-          const pointerGroupA = nodeGroup.append('g')
-            .attr('transform', `translate(0, ${-pointerDistance})`);
-          
-          pointerGroupA.append('circle')
-            .attr('r', pointerRadius)
-            .attr('fill', '#3498db')
-            .attr('stroke', 'white')
-            .attr('stroke-width', 2);
-          
-          pointerGroupA.append('text')
-            .attr('text-anchor', 'middle')
-            .attr('dominant-baseline', 'middle')
-            .attr('fill', 'white')
-            .attr('font-size', `${fontSize * 0.7}px`)
-            .attr('font-weight', 'bold')
-            .text('A');
-          
-          // 添加指针A的垂直线和箭头
-          const lineStartY_A = -pointerDistance + pointerRadius;
-          const lineEndY_A = -nodeRadius;
-          
-          // 画主线
-          nodeGroup.append('line')
-            .attr('x1', 0)
-            .attr('y1', lineStartY_A)
-            .attr('x2', 0)
-            .attr('y2', lineEndY_A)
-            .attr('stroke', '#3498db')
-            .attr('stroke-width', 2.5);
-          
-          // 添加三角形箭头
-          const arrowSize = 8;
-          nodeGroup.append('path')
-            .attr('d', `M${-arrowSize},${lineEndY_A + arrowSize} L0,${lineEndY_A} L${arrowSize},${lineEndY_A + arrowSize} Z`)
-            .attr('fill', '#3498db');
-            
-          // 标记指针A已被渲染
-          renderedPointers.pointerA.add(currentNodeA);
-        }
-        
-        // 只有在指针B还没有被渲染时才添加指针B
-        if (needToRenderB) {
-          // 2. 添加指针B的圆圈和标签 - 放在下方
-          const pointerGroupB = nodeGroup.append('g')
-            .attr('transform', `translate(0, ${pointerDistance})`);
-          
-          pointerGroupB.append('circle')
-            .attr('r', pointerRadius)
-            .attr('fill', '#9b59b6')
-            .attr('stroke', 'white')
-            .attr('stroke-width', 2);
-          
-          pointerGroupB.append('text')
-            .attr('text-anchor', 'middle')
-            .attr('dominant-baseline', 'middle')
-            .attr('fill', 'white')
-            .attr('font-size', `${fontSize * 0.7}px`)
-            .attr('font-weight', 'bold')
-            .text('B');
-          
-          // 添加指针B的垂直线和箭头
-          const lineStartY_B = pointerDistance - pointerRadius;
-          const lineEndY_B = nodeRadius;
-          
-          // 画主线
-          nodeGroup.append('line')
-            .attr('x1', 0)
-            .attr('y1', lineStartY_B)
-            .attr('x2', 0)
-            .attr('y2', lineEndY_B)
-            .attr('stroke', '#9b59b6')
-            .attr('stroke-width', 2.5);
-          
-          // 添加三角形箭头
-          const arrowSize = 8;
-          nodeGroup.append('path')
-            .attr('d', `M${-arrowSize},${lineEndY_B - arrowSize} L0,${lineEndY_B} L${arrowSize},${lineEndY_B - arrowSize} Z`)
-            .attr('fill', '#9b59b6');
-            
-          // 标记指针B已被渲染
-          renderedPointers.pointerB.add(currentNodeB);
-        }
-      }
+    // 处理指针A和B在相同位置的情况
+    if (currentNodeA && currentNodeB && currentNodeA === currentNodeB) {
+      // 添加相交效果
+      addPointersIntersectEffect(svg, nodeAX, nodeAY, 1.2);
     }
+    
+    // 在所有渲染完成后，添加动画效果
+    applyAnimationEffects(svg, currentNodeA, currentNodeB, nodePositions, nodeRadius, scale);
   }
 }; 
