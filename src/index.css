@@ -2128,8 +2128,8 @@ select:focus {
 }
 
 .qr-popup img {
-  width: 180px;
-  height: 180px;
+  max-width: 200px;
+  height: auto;
   border-radius: 8px;
 }
 
