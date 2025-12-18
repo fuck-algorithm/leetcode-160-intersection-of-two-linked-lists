@@ -5,6 +5,7 @@ import VisualizationTab from './components/layout/VisualizationTab';
 import CodeTab from './components/layout/CodeTab';
 import ProblemDescription from './components/ProblemDescription';
 import LinkedListCreator from './components/LinkedListCreator';
+import WechatGroupFloat from './components/WechatGroupFloat';
 import { useStateManagement } from './hooks/algorithmSteps';
 import { useAlgorithmSteps } from './hooks/useAlgorithmSteps';
 
@@ -86,6 +87,8 @@ const App: React.FC = () => {
           }}
         />
       )}
+      
+      <WechatGroupFloat />
     </div>
   );
 };

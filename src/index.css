@@ -2064,3 +2064,81 @@ select:focus {
     margin: 0.5rem 0;
   }
 }
+
+
+/* ===== 微信交流群悬浮球 ===== */
+.wechat-float {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 1000;
+}
+
+.float-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, #07c160, #06ad56);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(7, 193, 96, 0.4);
+  transition: all 0.3s ease;
+}
+
+.float-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(7, 193, 96, 0.5);
+}
+
+.float-btn span:first-child {
+  font-size: 20px;
+}
+
+.float-text {
+  font-size: 10px;
+  color: white;
+  margin-top: 2px;
+}
+
+.qr-popup {
+  position: absolute;
+  bottom: 70px;
+  right: 0;
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  text-align: center;
+  min-width: 200px;
+}
+
+.qr-popup::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  right: 20px;
+  width: 16px;
+  height: 16px;
+  background: white;
+  transform: rotate(45deg);
+  box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.qr-popup img {
+  width: 180px;
+  height: 180px;
+  border-radius: 8px;
+}
+
+.qr-popup p {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: #666;
+}
+
+.qr-popup strong {
+  color: #07c160;
+}
