@@ -170,7 +170,7 @@ export const renderVisualizer = (
     bottomRowY
   );
   
-  // 渲染相交部分的连接线 - 使用与参考图类似的方式连接
+  // 渲染相交部分的连接线 - 使用简洁的直角折线设计
   if (nodeInfo.hasIntersection && nodeInfo.intersectionNodes.length > 0) {
     // 获取链表A和B的最后节点位置
     const lastAIndex = nodeInfo.preIntersectionNodesA.length - 1;
@@ -179,63 +179,52 @@ export const renderVisualizer = (
     const lastAX = leftOffset + (lastAIndex >= 0 ? lastAIndex * nodeSpacing : 0);
     const lastBX = leftOffset + (lastBIndex >= 0 ? lastBIndex * nodeSpacing : 0);
     
-    // 第一个相交节点的位置 - 使用固定计算确保稳定性
+    // 第一个相交节点的位置
     const intersectionX = nodeInfo.startX;
     // 将相交部分移到两个链表的中间
     const intersectionY = (topRowY + bottomRowY) / 2;
     
-    // 计算控制点距离 - 根据节点间距动态调整，确保连接线不会过于拥挤或稀疏
-    const controlDistance = Math.max(nodeRadius * 3, nodeSpacing * 0.5);
+    // 计算汇合点X坐标 - 在最后一个非相交节点和第一个相交节点之间
+    const maxLastX = Math.max(lastAX, lastBX);
+    const mergeX = maxLastX + nodeSpacing * 0.6; // 汇合点在中间偏右
     
-    // 从链表A到相交点的连接线
+    // 从链表A到相交点的连接线 - 使用简洁的折线
     if (lastAIndex >= 0 || listA.nodes.length > 0) {
-      // 确保即使链表A为空或只有相交节点，也能正确显示连接
       const actualLastAX = lastAIndex >= 0 ? lastAX : leftOffset;
       
-      // 自适应控制点计算，根据连接距离调整曲线的弯曲程度
-      const distance = Math.abs(intersectionX - actualLastAX);
-      // 根据距离动态调整弯曲因子，较近时更平滑，较远时更曲折
-      const bendFactor = Math.min(0.6, Math.max(0.15, distance / 800));
-      
-      const controlPointX1 = actualLastAX + controlDistance;
-      const controlPointY1 = topRowY + (intersectionY - topRowY) * bendFactor; 
-      const controlPointX2 = intersectionX - controlDistance;
-      const controlPointY2 = intersectionY - (intersectionY - topRowY) * bendFactor; 
+      // 简洁的两段折线：水平 -> 斜向下
+      const pathA = `M${actualLastAX + nodeRadius},${topRowY} 
+                     L${mergeX},${topRowY} 
+                     L${intersectionX - nodeRadius},${intersectionY}`;
       
       svg.append('path')
-        .attr('d', `M${actualLastAX + nodeRadius},${topRowY} C${controlPointX1},${controlPointY1} ${controlPointX2},${controlPointY2} ${intersectionX - nodeRadius},${intersectionY}`)
+        .attr('d', pathA)
         .attr('stroke', '#3498db')
         .attr('stroke-width', 2.5)
         .attr('fill', 'none')
         .attr('marker-end', 'url(#arrow-marker-a)')
         .style('stroke-linecap', 'round')
-        .style('stroke-dasharray', '0') // 使用实线
+        .style('stroke-linejoin', 'round')
         .style('pointer-events', 'none');
     }
     
-    // 从链表B到相交点的连接线
+    // 从链表B到相交点的连接线 - 使用简洁的折线
     if (lastBIndex >= 0 || listB.nodes.length > 0) {
-      // 确保即使链表B为空或只有相交节点，也能正确显示连接
       const actualLastBX = lastBIndex >= 0 ? lastBX : leftOffset;
       
-      // 自适应控制点计算
-      const distance = Math.abs(intersectionX - actualLastBX);
-      // 根据距离动态调整弯曲因子
-      const bendFactor = Math.min(0.6, Math.max(0.15, distance / 800));
-      
-      const controlPointX1 = actualLastBX + controlDistance;
-      const controlPointY1 = bottomRowY - (bottomRowY - intersectionY) * bendFactor;
-      const controlPointX2 = intersectionX - controlDistance;
-      const controlPointY2 = intersectionY + (bottomRowY - intersectionY) * bendFactor;
+      // 简洁的两段折线：水平 -> 斜向上
+      const pathB = `M${actualLastBX + nodeRadius},${bottomRowY} 
+                     L${mergeX},${bottomRowY} 
+                     L${intersectionX - nodeRadius},${intersectionY}`;
       
       svg.append('path')
-        .attr('d', `M${actualLastBX + nodeRadius},${bottomRowY} C${controlPointX1},${controlPointY1} ${controlPointX2},${controlPointY2} ${intersectionX - nodeRadius},${intersectionY}`)
+        .attr('d', pathB)
         .attr('stroke', '#9b59b6')
         .attr('stroke-width', 2.5)
         .attr('fill', 'none')
         .attr('marker-end', 'url(#arrow-marker-b)')
         .style('stroke-linecap', 'round')
-        .style('stroke-dasharray', '0') // 使用实线
+        .style('stroke-linejoin', 'round')
         .style('pointer-events', 'none');
     }
     
@@ -345,6 +334,9 @@ export const renderVisualizer = (
           nodeGroup.append('path')
             .attr('d', `M${-arrowSize},${lineEndY + arrowSize} L0,${lineEndY} L${arrowSize},${lineEndY + arrowSize} Z`)
             .attr('fill', '#3498db');
+          
+          // 标记指针A已在相交部分渲染
+          renderedPointers.pointerA.add(node);
         }
         
         // 如果是指针B在节点上，则添加指针B的标记
@@ -389,6 +381,9 @@ export const renderVisualizer = (
           nodeGroup.append('path')
             .attr('d', `M${-arrowSize},${lineEndY - arrowSize} L0,${lineEndY} L${arrowSize},${lineEndY - arrowSize} Z`)
             .attr('fill', '#9b59b6');
+          
+          // 标记指针B已在相交部分渲染
+          renderedPointers.pointerB.add(node);
         }
       }
     });
@@ -430,65 +425,54 @@ export const renderVisualizer = (
         nodeAX = leftOffset + indexInB * nodeSpacing;
         nodeAY = bottomRowY;
         
-        // 指针A在链表B中，添加连接线到链表A的末尾
-        // 需要考虑相交部分的节点，所以真正的终点应该是相交部分的最后一个节点（如果有相交）
-        // 或者是链表A的最后一个节点（如果没有相交）
-        if (nodeInfo.preIntersectionNodesA.length > 0 || nodeInfo.intersectionNodes.length > 0) {
-          let lastNodeAX, lastNodeAY;
-          
-          // 确定链表A真正的最后一个节点位置
-          if (nodeInfo.hasIntersection && nodeInfo.intersectionNodes.length > 0) {
-            // 如果有相交部分，使用相交部分的最后一个节点
-            const lastIntersectionIndex = nodeInfo.intersectionNodes.length - 1;
-            lastNodeAX = nodeInfo.startX + lastIntersectionIndex * nodeSpacing;
-            lastNodeAY = (topRowY + bottomRowY) / 2; // 相交部分的Y坐标
-          } else {
-            // 如果没有相交，使用链表A的最后一个节点
-            const lastNodeAIndex = nodeInfo.preIntersectionNodesA.length - 1;
-            lastNodeAX = leftOffset + lastNodeAIndex * nodeSpacing;
-            lastNodeAY = topRowY;
-          }
-          
-          // 计算适当的曲线控制点，根据节点位置动态调整
-          // 使用比例计算控制点位置，确保连接线不会随链表尺寸变化过于夸张
-          const distance = Math.abs(lastNodeAX - nodeAX);
-          const vertDistance = Math.abs(lastNodeAY - nodeAY);
-          
-          // 水平距离较远时，使用更大的垂直偏移
-          const verticalOffset = Math.min(
-            verticalSpacing * 2,  // 最大不超过两倍垂直间距
-            Math.max(
-              verticalSpacing * 0.8,  // 最小不低于0.8倍垂直间距
-              distance * 0.2  // 根据水平距离按比例计算
-            )
-          );
-          
-          // 确定控制点位置 - 从下方绕过的路径
-          const isGoingDown = nodeAY < lastNodeAY;
-          const cpY1 = isGoingDown ?
-            nodeAY + verticalOffset :
-            nodeAY - verticalOffset;
-          const cpY2 = isGoingDown ?
-            lastNodeAY + verticalOffset :
-            lastNodeAY - verticalOffset;
-            
-          // 调整水平控制点避免线条过于弯曲或太直
-          const minHorizOffset = nodeRadius * 4;
-          const horizFactor = distance * 0.25; // 根据距离计算水平偏移量
-          const cpX1 = nodeAX + Math.max(minHorizOffset, horizFactor);
-          const cpX2 = lastNodeAX - Math.max(minHorizOffset, horizFactor);
-          
-          // 绘制连接线
-          svg.append('path')
-            .attr('d', `M${nodeAX},${nodeAY} C${cpX1},${cpY1} ${cpX2},${cpY2} ${lastNodeAX},${lastNodeAY}`)
-            .attr('stroke', '#3498db')
-            .attr('stroke-width', 3)
-            .attr('stroke-dasharray', '7,5')
-            .attr('fill', 'none')
-            .attr('opacity', 0.8)
-            .attr('marker-end', 'url(#arrow-marker-a)')
-            .style('pointer-events', 'none');
+        // 指针A在链表B中，说明A已经遍历完链表A，跳转到了链表B
+        // 绘制从链表A末尾到链表B头部的跳转路径
+        const headBX = leftOffset;
+        const headBY = bottomRowY;
+        
+        // 计算链表A的末尾位置（相交前最后一个节点或相交部分最后一个节点）
+        let endOfListAX: number;
+        let endOfListAY: number;
+        if (nodeInfo.hasIntersection && nodeInfo.intersectionNodes.length > 0) {
+          // 如果有相交，末尾是相交部分的最后一个节点
+          const lastIntersectionIndex = nodeInfo.intersectionNodes.length - 1;
+          endOfListAX = nodeInfo.startX + lastIntersectionIndex * nodeSpacing;
+          endOfListAY = (topRowY + bottomRowY) / 2;
+        } else {
+          // 没有相交，末尾是链表A的最后一个节点
+          const lastAIndex = nodeInfo.preIntersectionNodesA.length - 1;
+          endOfListAX = leftOffset + (lastAIndex >= 0 ? lastAIndex * nodeSpacing : 0);
+          endOfListAY = topRowY;
         }
+        
+        // 绘制跳转路径：从链表A末尾 -> 向上弯曲 -> 到链表B头部
+        const jumpHeight = 50; // 跳转弧线的高度
+        const midX = (endOfListAX + headBX) / 2;
+        const topY = Math.min(topRowY, bottomRowY) - jumpHeight;
+        
+        // 使用虚线绘制跳转路径
+        svg.append('path')
+          .attr('d', `M${endOfListAX + nodeRadius},${endOfListAY} 
+                      Q${endOfListAX + nodeRadius + 30},${topY} ${midX},${topY}
+                      Q${headBX - 30},${topY} ${headBX},${headBY - nodeRadius}`)
+          .attr('stroke', '#3498db')
+          .attr('stroke-width', 2.5)
+          .attr('stroke-dasharray', '8,4')
+          .attr('fill', 'none')
+          .attr('opacity', 0.7)
+          .attr('marker-end', 'url(#arrow-marker-a)')
+          .style('pointer-events', 'none');
+        
+        // 添加跳转说明标签
+        svg.append('text')
+          .attr('x', midX)
+          .attr('y', topY - 10)
+          .attr('text-anchor', 'middle')
+          .attr('fill', '#3498db')
+          .attr('font-size', `${fontSize * 0.7}px`)
+          .attr('font-weight', 'bold')
+          .attr('opacity', 0.9)
+          .text('pA 跳转到 headB');
       } else if (indexInIntersection !== -1) {
         nodeAX = nodeInfo.startX + indexInIntersection * nodeSpacing;
         nodeAY = (topRowY + bottomRowY) / 2;
@@ -564,65 +548,54 @@ export const renderVisualizer = (
         nodeBX = leftOffset + indexInA * nodeSpacing;
         nodeBY = topRowY;
         
-        // 指针B在链表A中，添加连接线到链表B的末尾
-        // 需要考虑相交部分的节点，所以真正的终点应该是相交部分的最后一个节点（如果有相交）
-        // 或者是链表B的最后一个节点（如果没有相交）
-        if (nodeInfo.preIntersectionNodesB.length > 0 || nodeInfo.intersectionNodes.length > 0) {
-          let lastNodeBX, lastNodeBY;
-          
-          // 确定链表B真正的最后一个节点位置
-          if (nodeInfo.hasIntersection && nodeInfo.intersectionNodes.length > 0) {
-            // 如果有相交部分，使用相交部分的最后一个节点
-            const lastIntersectionIndex = nodeInfo.intersectionNodes.length - 1;
-            lastNodeBX = nodeInfo.startX + lastIntersectionIndex * nodeSpacing;
-            lastNodeBY = (topRowY + bottomRowY) / 2; // 相交部分的Y坐标
-          } else {
-            // 如果没有相交，使用链表B的最后一个节点
-            const lastNodeBIndex = nodeInfo.preIntersectionNodesB.length - 1;
-            lastNodeBX = leftOffset + lastNodeBIndex * nodeSpacing;
-            lastNodeBY = bottomRowY;
-          }
-          
-          // 计算适当的曲线控制点，根据节点位置动态调整
-          // 使用比例计算控制点位置，确保连接线不会随链表尺寸变化过于夸张
-          const distance = Math.abs(lastNodeBX - nodeBX);
-          const vertDistance = Math.abs(lastNodeBY - nodeBY);
-          
-          // 水平距离较远时，使用更大的垂直偏移
-          const verticalOffset = Math.min(
-            verticalSpacing * 2,  // 最大不超过两倍垂直间距
-            Math.max(
-              verticalSpacing * 0.8,  // 最小不低于0.8倍垂直间距
-              distance * 0.2  // 根据水平距离按比例计算
-            )
-          );
-          
-          // 确定控制点位置 - 从上方绕过的路径
-          const isGoingUp = nodeBY > lastNodeBY;
-          const cpY1 = isGoingUp ?
-            nodeBY - verticalOffset :
-            nodeBY + verticalOffset;
-          const cpY2 = isGoingUp ?
-            lastNodeBY - verticalOffset :
-            lastNodeBY + verticalOffset;
-            
-          // 调整水平控制点避免线条过于弯曲或太直
-          const minHorizOffset = nodeRadius * 4;
-          const horizFactor = distance * 0.25; // 根据距离计算水平偏移量
-          const cpX1 = nodeBX + Math.max(minHorizOffset, horizFactor);
-          const cpX2 = lastNodeBX - Math.max(minHorizOffset, horizFactor);
-          
-          // 绘制连接线
-          svg.append('path')
-            .attr('d', `M${nodeBX},${nodeBY} C${cpX1},${cpY1} ${cpX2},${cpY2} ${lastNodeBX},${lastNodeBY}`)
-            .attr('stroke', '#8e44ad')
-            .attr('stroke-width', 3)
-            .attr('stroke-dasharray', '7,5')
-            .attr('fill', 'none')
-            .attr('opacity', 0.8)
-            .attr('marker-end', 'url(#arrow-marker-b)')
-            .style('pointer-events', 'none');
+        // 指针B在链表A中，说明B已经遍历完链表B，跳转到了链表A
+        // 绘制从链表B末尾到链表A头部的跳转路径
+        const headAX = leftOffset;
+        const headAY = topRowY;
+        
+        // 计算链表B的末尾位置
+        let endOfListBX: number;
+        let endOfListBY: number;
+        if (nodeInfo.hasIntersection && nodeInfo.intersectionNodes.length > 0) {
+          // 如果有相交，末尾是相交部分的最后一个节点
+          const lastIntersectionIndex = nodeInfo.intersectionNodes.length - 1;
+          endOfListBX = nodeInfo.startX + lastIntersectionIndex * nodeSpacing;
+          endOfListBY = (topRowY + bottomRowY) / 2;
+        } else {
+          // 没有相交，末尾是链表B的最后一个节点
+          const lastBIndex = nodeInfo.preIntersectionNodesB.length - 1;
+          endOfListBX = leftOffset + (lastBIndex >= 0 ? lastBIndex * nodeSpacing : 0);
+          endOfListBY = bottomRowY;
         }
+        
+        // 绘制跳转路径：从链表B末尾 -> 向下弯曲 -> 到链表A头部
+        const jumpHeight = 50;
+        const midX = (endOfListBX + headAX) / 2;
+        const bottomY = Math.max(topRowY, bottomRowY) + jumpHeight;
+        
+        // 使用虚线绘制跳转路径
+        svg.append('path')
+          .attr('d', `M${endOfListBX + nodeRadius},${endOfListBY} 
+                      Q${endOfListBX + nodeRadius + 30},${bottomY} ${midX},${bottomY}
+                      Q${headAX - 30},${bottomY} ${headAX},${headAY + nodeRadius}`)
+          .attr('stroke', '#9b59b6')
+          .attr('stroke-width', 2.5)
+          .attr('stroke-dasharray', '8,4')
+          .attr('fill', 'none')
+          .attr('opacity', 0.7)
+          .attr('marker-end', 'url(#arrow-marker-b)')
+          .style('pointer-events', 'none');
+        
+        // 添加跳转说明标签
+        svg.append('text')
+          .attr('x', midX)
+          .attr('y', bottomY + 20)
+          .attr('text-anchor', 'middle')
+          .attr('fill', '#9b59b6')
+          .attr('font-size', `${fontSize * 0.7}px`)
+          .attr('font-weight', 'bold')
+          .attr('opacity', 0.9)
+          .text('pB 跳转到 headA');
       } else if (indexInB !== -1) {
         nodeBX = leftOffset + indexInB * nodeSpacing;
         nodeBY = bottomRowY;

@@ -23,7 +23,7 @@ const App: React.FC = () => {
     handleSpeedChange,
     toggleAutoExecution,
     resetExecution,
-    handleChangeSolution
+    seekToStep
   } = useAlgorithmSteps();
 
   useEffect(() => {
@@ -54,6 +54,7 @@ const App: React.FC = () => {
               onSpeedChange={handleSpeedChange}
               onToggleExecution={toggleAutoExecution}
               onReset={resetExecution}
+              onSeekToStep={seekToStep}
             />
           </Tab>
           <Tab id="problem" label="题目描述">

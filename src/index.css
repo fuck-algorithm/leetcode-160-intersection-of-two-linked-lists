@@ -261,35 +261,36 @@ button {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0 1rem;
-  min-width: 350px;
+  padding: 0 0.5rem;
+  min-width: 180px;
 }
 
 .selection-group label {
   font-weight: 500;
   white-space: nowrap;
+  font-size: 0.85rem;
 }
 
 .speed-slider {
   flex: 1;
-  min-width: 200px;
-  height: 8px;
+  min-width: 80px;
+  max-width: 100px;
+  height: 6px;
   -webkit-appearance: none;
   appearance: none;
-  background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+  background: #ccc;
   outline: none;
-  border-radius: 10px;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
   cursor: pointer;
 }
 
 .speed-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   background: white;
-  border: 2px solid var(--primary-color);
+  border: 2px solid #666;
   border-radius: 50%;
   cursor: pointer;
   transition: all 0.2s;
@@ -297,7 +298,7 @@ button {
 }
 
 .speed-slider::-webkit-slider-thumb:hover {
-  transform: scale(1.2);
+  transform: scale(1.1);
 }
 
 .speed-slider:disabled {
@@ -306,13 +307,13 @@ button {
 }
 
 .delay-value {
-  min-width: 55px;
+  min-width: 50px;
   text-align: center;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 500;
-  color: var(--secondary-color);
+  color: #666;
   background-color: #f0f0f0;
-  padding: 2px 6px;
+  padding: 2px 4px;
   border-radius: 4px;
 }
 
@@ -1550,10 +1551,196 @@ select:focus {
 .d3-container-wrapper {
   width: 100%;
   height: 100%;
-  min-height: 550px;
+  min-height: 400px;
   position: relative;
   overflow: hidden;
-  margin-bottom: 20px;
+}
+
+/* 可视化主内容区域 - 链表和代码并排 */
+.visualization-main-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+  gap: 0;
+}
+
+.visualization-main-content .visualization-container {
+  flex: 1;
+  min-height: 350px;
+}
+
+/* Java 代码调试器样式 */
+.java-code-debugger {
+  background: #1e1e1e;
+  border-top: 1px solid #333;
+  display: flex;
+  flex-direction: column;
+  max-height: 280px;
+  overflow: hidden;
+}
+
+.debugger-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: #252526;
+  border-bottom: 1px solid #333;
+}
+
+.debugger-title {
+  color: #cccccc;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.step-indicator {
+  color: #4fc3f7;
+  font-size: 12px;
+  font-family: 'Consolas', 'Monaco', monospace;
+}
+
+.code-and-vars {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.code-section {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.java-code {
+  margin: 0;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.code-line {
+  display: flex;
+  padding: 1px 12px;
+  transition: background-color 0.15s ease;
+}
+
+.code-line.highlighted {
+  background: rgba(255, 255, 0, 0.15);
+  border-left: 3px solid #ffeb3b;
+  padding-left: 9px;
+}
+
+.line-number {
+  color: #858585;
+  min-width: 30px;
+  text-align: right;
+  padding-right: 12px;
+  user-select: none;
+}
+
+.line-content {
+  color: #d4d4d4;
+  white-space: pre;
+}
+
+/* 语法高亮 */
+.code-line .line-content {
+  color: #d4d4d4;
+}
+
+/* 变量区域 */
+.variables-section {
+  width: 220px;
+  background: #252526;
+  border-left: 1px solid #333;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.variables-header {
+  padding: 8px 12px;
+  color: #cccccc;
+  font-size: 12px;
+  font-weight: 500;
+  background: #2d2d2d;
+  border-bottom: 1px solid #333;
+}
+
+.variables-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.no-vars {
+  color: #858585;
+  font-size: 12px;
+  text-align: center;
+  padding: 12px;
+}
+
+.variable-item {
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 12px;
+  background: #1e1e1e;
+  border-radius: 3px;
+  margin-bottom: 4px;
+}
+
+.var-name {
+  font-weight: 600;
+}
+
+.var-equals {
+  color: #d4d4d4;
+  margin: 0 6px;
+}
+
+.var-value {
+  color: #ce9178;
+  word-break: break-all;
+}
+
+.result-section {
+  padding: 8px 12px;
+  background: #2d2d2d;
+  border-top: 1px solid #333;
+}
+
+.result-label {
+  color: #4ec9b0;
+  font-size: 11px;
+  margin-bottom: 4px;
+}
+
+.result-value {
+  color: #dcdcaa;
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 12px;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .code-and-vars {
+    flex-direction: column;
+  }
+  
+  .variables-section {
+    width: 100%;
+    border-left: none;
+    border-top: 1px solid #333;
+    max-height: 120px;
+  }
+  
+  .java-code-debugger {
+    max-height: 350px;
+  }
 }
 
 /* ===== 节点高亮动画 - 简化版 ===== */
@@ -1597,3 +1784,283 @@ select:focus {
 
 /* ===== END ADVANCED NODE HIGHLIGHT ANIMATIONS ===== */ 
 /* ===== END ADVANCED NODE HIGHLIGHT ANIMATIONS ===== */ 
+
+
+/* ===== 力扣风格标题样式 ===== */
+.app-header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+}
+
+.title-link {
+  color: white;
+  text-decoration: none;
+  transition: color 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.title-link:hover {
+  color: var(--accent-color);
+}
+
+.problem-number {
+  font-weight: 600;
+}
+
+.problem-name {
+  font-weight: 500;
+}
+
+.difficulty-badge {
+  font-size: 0.75rem;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-weight: 500;
+  margin-left: 8px;
+}
+
+.difficulty-badge.easy {
+  background-color: #00b8a3;
+  color: white;
+}
+
+.difficulty-badge.medium {
+  background-color: #ffc01e;
+  color: #1a1a1a;
+}
+
+.difficulty-badge.hard {
+  background-color: #ff375f;
+  color: white;
+}
+
+/* GitHub 链接增强 */
+.github-link {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  opacity: 0.9;
+}
+
+.github-link:hover {
+  transform: translateY(-50%) scale(1.15);
+  opacity: 1;
+}
+
+.github-link svg {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+/* ===== 代码语法高亮样式 ===== */
+.token-keyword {
+  color: #c586c0;
+  font-weight: 500;
+}
+
+.token-type {
+  color: #4ec9b0;
+}
+
+.token-function {
+  color: #dcdcaa;
+}
+
+.token-variable {
+  color: #9cdcfe;
+}
+
+.token-operator {
+  color: #d4d4d4;
+}
+
+.token-string {
+  color: #ce9178;
+}
+
+.token-number {
+  color: #b5cea8;
+}
+
+.token-comment {
+  color: #6a9955;
+  font-style: italic;
+}
+
+.token-punctuation {
+  color: #d4d4d4;
+}
+
+.token-plain {
+  color: #d4d4d4;
+}
+
+/* ===== 行内变量显示样式 ===== */
+.inline-vars {
+  margin-left: 20px;
+  display: inline-flex;
+  gap: 12px;
+  font-size: 11px;
+  opacity: 0.95;
+}
+
+.inline-var {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-family: 'Consolas', 'Monaco', monospace;
+  border-left: 2px solid currentColor;
+}
+
+/* 高亮行增强效果 */
+.code-line.highlighted {
+  background: linear-gradient(90deg, rgba(255, 255, 0, 0.12) 0%, rgba(255, 255, 0, 0.05) 100%);
+  border-left: 3px solid #ffeb3b;
+  padding-left: 9px;
+  position: relative;
+}
+
+.code-line.highlighted::before {
+  content: '▶';
+  position: absolute;
+  left: -2px;
+  color: #ffeb3b;
+  font-size: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* 代码行悬停效果 */
+.code-line:hover:not(.highlighted) {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* 变量面板颜色更新 */
+.variables-section .var-name {
+  font-weight: 600;
+}
+
+/* 调试器整体样式增强 */
+.java-code-debugger {
+  background: linear-gradient(180deg, #1e1e1e 0%, #252526 100%);
+  border-top: 2px solid #007acc;
+}
+
+.debugger-header {
+  background: linear-gradient(90deg, #252526 0%, #2d2d2d 100%);
+}
+
+.step-indicator {
+  background: rgba(79, 195, 247, 0.15);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+
+/* ===== 进度条样式 ===== */
+.progress-group {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  margin: 0 1rem;
+}
+
+.progress-container {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 10px;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 8px;
+  border-radius: 4px;
+  position: relative;
+  background: #e0e0e0;
+}
+
+.progress-slider {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  width: 100%;
+  height: 20px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+  margin: 0;
+}
+
+.progress-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  background: white;
+  border: 3px solid #4CAF50;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.progress-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+}
+
+.progress-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  background: white;
+  border: 3px solid #4CAF50;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.progress-slider:disabled {
+  cursor: not-allowed;
+}
+
+.progress-slider:disabled::-webkit-slider-thumb {
+  background: #ccc;
+  border-color: #999;
+  cursor: not-allowed;
+}
+
+.progress-text {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #666;
+  white-space: nowrap;
+  min-width: 70px;
+  text-align: center;
+  background: #f5f5f5;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .progress-group {
+    order: 3;
+    width: 100%;
+    max-width: none;
+    margin: 0.5rem 0;
+  }
+}

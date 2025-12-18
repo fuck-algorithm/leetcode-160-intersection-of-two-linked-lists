@@ -8,7 +8,6 @@ export function useAlgorithmSteps() {
   const {
     state,
     setState,
-    stepHistory,
     setStepHistory,
     setShowCreator, // 只获取setter，不需要状态
     handleChangeSolution,
@@ -16,7 +15,8 @@ export function useAlgorithmSteps() {
     handleStepBackward,
     handleSpeedChange,
     toggleAutoExecution,
-    resetExecution
+    resetExecution,
+    seekToStep
   } = useStateManagement();
   
   // 使用示例创建钩子
@@ -42,6 +42,7 @@ export function useAlgorithmSteps() {
     handleSpeedChange,
     toggleAutoExecution,
     resetExecution,
-    handleChangeSolution
+    handleChangeSolution,
+    seekToStep
   };
 } 

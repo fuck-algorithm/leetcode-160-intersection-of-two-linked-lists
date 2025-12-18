@@ -22,7 +22,9 @@ export const useStateManagement = () => {
     isRunning: false,
     speed: 500, // 步骤之间的毫秒数
     completed: false,
-    message: "欢迎！请点击'创建示例'按钮开始。"
+    message: "欢迎！请点击'创建示例'按钮开始。",
+    pointerAJumped: false,
+    pointerBJumped: false
   });
   
   // 保存步骤历史记录以支持前进/后退
@@ -42,7 +44,9 @@ export const useStateManagement = () => {
       currentNodeB: null,
       visitedNodes: new Set<ListNode>(),
       completed: false,
-      message: `已选择 ${value} 解决方案。`
+      message: `已选择 ${value} 解决方案。`,
+      pointerAJumped: false,
+      pointerBJumped: false
     }));
     
     // 重置步骤历史
@@ -125,12 +129,121 @@ export const useStateManagement = () => {
       step: 0,
       isRunning: false,
       completed: false,
-      message: `示例已重置。两个链表在值为 ${prev.intersection?.val || '无'} 的节点相交。`
+      message: `示例已重置。两个链表在值为 ${prev.intersection?.val || '无'} 的节点相交。`,
+      pointerAJumped: false,
+      pointerBJumped: false
     }));
     
     // 清空步骤历史
     setStepHistory([]);
   }, []);
+
+  // 跳转到特定步骤
+  const seekToStep = useCallback((targetStep: number) => {
+    if (targetStep < 0) return;
+    
+    const currentStep = state.step;
+    
+    if (targetStep < currentStep) {
+      // 向后跳转：需要从头开始重新执行到目标步骤
+      // 先重置状态
+      setState(prev => ({
+        ...prev,
+        currentNodeA: null,
+        currentNodeB: null,
+        visitedNodes: new Set<ListNode>(),
+        step: 0,
+        isRunning: false,
+        completed: false,
+        message: '正在跳转...',
+        pointerAJumped: false,
+        pointerBJumped: false
+      }));
+      setStepHistory([]);
+      
+      // 然后快速执行到目标步骤
+      // 使用 setTimeout 确保状态已更新
+      setTimeout(() => {
+        let tempState: VisualizationState = {
+          ...state,
+          currentNodeA: null,
+          currentNodeB: null,
+          visitedNodes: new Set<ListNode>(),
+          step: 0,
+          completed: false,
+          pointerAJumped: false,
+          pointerBJumped: false
+        };
+        const tempHistory: StepHistory[] = [];
+        
+        for (let i = 0; i < targetStep; i++) {
+          // 保存当前状态到历史
+          tempHistory.push({
+            currentNodeA: tempState.currentNodeA,
+            currentNodeB: tempState.currentNodeB,
+            visitedNodes: new Set(tempState.visitedNodes),
+            message: tempState.message,
+            completed: tempState.completed
+          });
+          
+          // 执行一步
+          const result = executeOneStep(tempState, state.solutionType);
+          tempState = { ...tempState, ...result, step: i + 1 } as VisualizationState;
+          
+          if (result.completed) break;
+        }
+        
+        setState(prev => ({
+          ...prev,
+          currentNodeA: tempState.currentNodeA,
+          currentNodeB: tempState.currentNodeB,
+          visitedNodes: tempState.visitedNodes,
+          step: tempState.step,
+          completed: tempState.completed,
+          message: tempState.message,
+          pointerAJumped: tempState.pointerAJumped,
+          pointerBJumped: tempState.pointerBJumped
+        }));
+        setStepHistory(tempHistory);
+      }, 0);
+    } else if (targetStep > currentStep) {
+      // 向前跳转：继续执行到目标步骤
+      const stepsToExecute = targetStep - currentStep;
+      let tempState: VisualizationState = { ...state };
+      const tempHistory = [...stepHistory];
+      
+      for (let i = 0; i < stepsToExecute; i++) {
+        if (tempState.completed) break;
+        
+        // 保存当前状态到历史
+        tempHistory.push({
+          currentNodeA: tempState.currentNodeA,
+          currentNodeB: tempState.currentNodeB,
+          visitedNodes: new Set(tempState.visitedNodes),
+          message: tempState.message,
+          completed: tempState.completed
+        });
+        
+        // 执行一步
+        const result = executeOneStep(tempState, state.solutionType);
+        tempState = { ...tempState, ...result, step: tempState.step + 1 } as VisualizationState;
+      }
+      
+      setState(prev => ({
+        ...prev,
+        currentNodeA: tempState.currentNodeA,
+        currentNodeB: tempState.currentNodeB,
+        visitedNodes: tempState.visitedNodes,
+        step: tempState.step,
+        completed: tempState.completed,
+        message: tempState.message,
+        isRunning: false,
+        pointerAJumped: tempState.pointerAJumped,
+        pointerBJumped: tempState.pointerBJumped
+      }));
+      setStepHistory(tempHistory);
+    }
+  }, [state, stepHistory]);
 
   return {
     state,
@@ -144,6 +257,84 @@ export const useStateManagement = () => {
     handleStepBackward,
     handleSpeedChange,
     toggleAutoExecution,
-    resetExecution
+    resetExecution,
+    seekToStep
   };
-}; 
+};
+
+// 辅助函数：执行一步算法
+function executeOneStep(
+  currentState: VisualizationState, 
+  solutionType: SolutionType
+): Partial<VisualizationState> {
+  // 简化版的步骤执行，返回新状态
+  let ptrA = currentState.currentNodeA;
+  let ptrB = currentState.currentNodeB;
+  let message = '';
+  let completed = false;
+  let pointerAJumped = currentState.pointerAJumped || false;
+  let pointerBJumped = currentState.pointerBJumped || false;
+  
+  // 初始化步骤
+  if (currentState.step === 0) {
+    ptrA = currentState.listA.head;
+    ptrB = currentState.listB.head;
+    pointerAJumped = false;
+    pointerBJumped = false;
+    message = '开始双指针解法。指针A从链表A的头节点开始，指针B从链表B的头节点开始。';
+    
+    // 初始化时也要检查是否已经相遇
+    if (ptrA === ptrB) {
+      completed = true;
+      message = ptrA 
+        ? `找到交点！值为${ptrA.val}的节点。` 
+        : '两个链表没有交点。';
+    }
+    return { currentNodeA: ptrA, currentNodeB: ptrB, message, completed, pointerAJumped, pointerBJumped };
+  }
+  
+  // 移动指针
+  let newPtrA: typeof ptrA;
+  let newPtrB: typeof ptrB;
+  
+  // 生成消息
+  const msgParts: string[] = [];
+  
+  if (ptrA === null) {
+    newPtrA = currentState.listB.head;
+    pointerAJumped = true;
+    msgParts.push(`指针A已经遍历完链表A，直接跳转到链表B的头节点开始第二次遍历。`);
+  } else {
+    newPtrA = ptrA.next;
+    if (newPtrA) {
+      msgParts.push(`指针A移动到值为${newPtrA.val}的节点。`);
+    } else {
+      msgParts.push(`指针A已经到达链表A的末尾。`);
+    }
+  }
+  
+  if (ptrB === null) {
+    newPtrB = currentState.listA.head;
+    pointerBJumped = true;
+    msgParts.push(`指针B已经遍历完整个链表B，直接跳转到链表A的头节点开始第二次遍历。`);
+  } else {
+    newPtrB = ptrB.next;
+    if (newPtrB) {
+      msgParts.push(`指针B移动到值为${newPtrB.val}的节点。`);
+    } else {
+      msgParts.push(`指针B已经到达链表B的末尾。`);
+    }
+  }
+  
+  message = msgParts.join(' ');
+  
+  // 移动后检查是否相遇
+  if (newPtrA === newPtrB) {
+    completed = true;
+    message = newPtrA 
+      ? `找到交点！两个指针在值为${newPtrA.val}的节点相遇。` 
+      : '两个链表没有交点。';
+  }
+  
+  return { currentNodeA: newPtrA, currentNodeB: newPtrB, message, completed, pointerAJumped, pointerBJumped };
+} 

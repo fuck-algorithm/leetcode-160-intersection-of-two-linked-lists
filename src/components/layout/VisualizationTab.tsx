@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import D3TwoPointerVisualizer from '../D3TwoPointerVisualizer';
 import ControlPanel from './ControlPanel';
+import JavaCodeDebugger from '../JavaCodeDebugger';
 import { VisualizationState } from '../../types';
 
 interface VisualizationTabProps {
@@ -11,6 +12,7 @@ interface VisualizationTabProps {
   onSpeedChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onToggleExecution: () => void;
   onReset: () => void;
+  onSeekToStep?: (step: number) => void;
 }
 
 const VisualizationTab: React.FC<VisualizationTabProps> = ({ 
@@ -20,7 +22,8 @@ const VisualizationTab: React.FC<VisualizationTabProps> = ({
   onStepBackward,
   onSpeedChange,
   onToggleExecution,
-  onReset
+  onReset,
+  onSeekToStep
 }) => {
   // 添加键盘事件监听器
   useEffect(() => {
@@ -83,23 +86,37 @@ const VisualizationTab: React.FC<VisualizationTabProps> = ({
         onToggleExecution={onToggleExecution}
         onReset={onReset}
         onOpenCreator={handleOpenCreator}
+        onSeekToStep={onSeekToStep}
       />
-      <div className="visualization-container">
-        <D3TwoPointerVisualizer
-          listA={state.listA}
-          listB={state.listB}
+      <div className="visualization-main-content">
+        <div className="visualization-container">
+          <D3TwoPointerVisualizer
+            listA={state.listA}
+            listB={state.listB}
+            currentNodeA={state.currentNodeA}
+            currentNodeB={state.currentNodeB}
+            intersectionNode={state.intersection}
+            speed={state.speed}
+            isRunning={state.isRunning}
+            message={state.message}
+            step={state.step}
+            pointerAJumped={state.pointerAJumped}
+            pointerBJumped={state.pointerBJumped}
+            onAnimationComplete={() => {/* 不需要额外操作 */}}
+          />
+        </div>
+        <JavaCodeDebugger
+          solutionType={state.solutionType}
           currentNodeA={state.currentNodeA}
           currentNodeB={state.currentNodeB}
-          intersectionNode={state.intersection}
-          speed={state.speed}
-          isRunning={state.isRunning}
-          message={state.message}
           step={state.step}
-          onAnimationComplete={() => {/* 不需要额外操作 */}}
+          completed={state.completed}
+          listAHead={state.listA.head}
+          listBHead={state.listB.head}
         />
       </div>
     </div>
   );
 };
 
-export default VisualizationTab; 
+export default VisualizationTab;

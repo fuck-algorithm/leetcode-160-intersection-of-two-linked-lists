@@ -8,7 +8,9 @@ const Header: React.FC = () => {
            target="_blank" 
            rel="noopener noreferrer"
            className="title-link">
-          LeetCode 160: 相交链表
+          <span className="problem-number">160.</span>
+          <span className="problem-name">相交链表</span>
+          <span className="difficulty-badge easy">简单</span>
         </a>
       </h1>
       <a 
@@ -20,8 +22,8 @@ const Header: React.FC = () => {
       >
         <svg 
           xmlns="http://www.w3.org/2000/svg" 
-          width="24" 
-          height="24" 
+          width="28" 
+          height="28" 
           viewBox="0 0 24 24"
           fill="white"
         >

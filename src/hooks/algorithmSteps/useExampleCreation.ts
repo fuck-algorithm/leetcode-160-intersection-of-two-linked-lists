@@ -25,7 +25,7 @@ export const useExampleCreation = (
   };
   
   // 创建随机示例
-  const createRandomExample = useCallback(() => {
+  const createRandomExample = useCallback((customCreateFn?: (valuesA: number[], valuesB: number[], intersectionValues: number[]) => void) => {
     // 使用固定长度，不再随机生成，确保每次创建的示例长度一致
     const listALength = 3; // 固定为3个节点
     const listBLength = 3; // 固定为3个节点
@@ -35,7 +35,10 @@ export const useExampleCreation = (
     const valuesB = generateRandomArray(listBLength);
     const intersectionValues = generateRandomArray(intersectionLength);
     
-    createCustomExample(valuesA, valuesB, intersectionValues);
+    // 如果提供了自定义创建函数，使用它；否则使用内部的createCustomExample
+    if (customCreateFn) {
+      customCreateFn(valuesA, valuesB, intersectionValues);
+    }
   }, []);
   
   // 创建自定义示例

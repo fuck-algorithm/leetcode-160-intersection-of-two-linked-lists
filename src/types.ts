@@ -32,4 +32,7 @@ export interface VisualizationState {
   speed: number;
   completed: boolean;
   message: string;
+  // 跟踪指针是否已经跳转到另一个链表
+  pointerAJumped?: boolean;
+  pointerBJumped?: boolean;
 } 

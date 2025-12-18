@@ -1,8 +1,7 @@
-import React, { useRef, useEffect } from 'react';
+import React from 'react';
 import { ListNode, LinkedListData } from '../../types';
-import { useContainerSize } from './twoPointerVisualizer/useContainerSize';
-import { renderVisualizer } from './twoPointerVisualizer/renderManager/renderVisualizer';
 import { useAnimationEffect } from './twoPointerVisualizer/useAnimationEffect';
+import TwoRowVisualizer from './TwoRowVisualizer';
 
 interface D3TwoPointerVisualizerProps {
   listA: LinkedListData;
@@ -14,6 +13,8 @@ interface D3TwoPointerVisualizerProps {
   isRunning: boolean;
   message: string;
   step: number;
+  pointerAJumped?: boolean;
+  pointerBJumped?: boolean;
   onAnimationComplete?: () => void;
 }
 
@@ -27,44 +28,25 @@ const D3TwoPointerVisualizer: React.FC<D3TwoPointerVisualizerProps> = ({
   isRunning,
   message,
   step,
+  pointerAJumped = false,
+  pointerBJumped = false,
   onAnimationComplete
 }) => {
-  const d3Container = useRef<HTMLDivElement>(null);
-  const containerSize = useContainerSize(d3Container);
-  
   // 使用自定义Hook处理动画效果
   useAnimationEffect(isRunning, onAnimationComplete, speed, currentNodeA, currentNodeB);
-  
-  // 渲染可视化内容
-  useEffect(() => {
-    if (d3Container.current) {
-      renderVisualizer(
-        d3Container.current,
-        containerSize,
-        listA,
-        listB,
-        currentNodeA,
-        currentNodeB,
-        intersectionNode,
-        message,
-        step
-      );
-    }
-  }, [
-    listA, 
-    listB, 
-    currentNodeA, 
-    currentNodeB, 
-    intersectionNode, 
-    containerSize,
-    message,
-    step
-  ]);
 
   return (
-    <div className="d3-container-wrapper">
-      <div className="d3-visualization-container" ref={d3Container}></div>
-    </div>
+    <TwoRowVisualizer
+      listA={listA}
+      listB={listB}
+      currentNodeA={currentNodeA}
+      currentNodeB={currentNodeB}
+      intersectionNode={intersectionNode}
+      message={message}
+      step={step}
+      pointerAJumped={pointerAJumped}
+      pointerBJumped={pointerBJumped}
+    />
   );
 };
 
