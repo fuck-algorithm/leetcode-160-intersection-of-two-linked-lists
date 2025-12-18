@@ -3,7 +3,13 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - main  # 每次推送到main分支时触发
+      - main
+
+# 设置 GITHUB_TOKEN 的权限
+permissions:
+  contents: write
+  pages: write
+  id-token: write
 
 jobs:
   build-and-deploy:
@@ -11,12 +17,12 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '16'
+          node-version: '18'
           cache: 'npm'
           
       - name: Install dependencies
@@ -25,11 +31,11 @@ jobs:
       - name: Build project
         run: npm run build
         env:
-          CI: false  # 允许有警告的情况下继续构建
+          CI: false
           
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          folder: build  # 构建输出的文件夹
-          branch: gh-pages  # 部署的目标分支
-          clean: true  # 清理旧文件 
+          folder: build
+          branch: gh-pages
+          clean: true
